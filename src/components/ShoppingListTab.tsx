@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Button } from '@/components/ui/button';
@@ -257,8 +258,7 @@ const ShoppingListTab: React.FC = () => {
                     <div className="flex flex-col space-y-2 md:flex-row md:items-center md:space-y-0 md:gap-2">
                       <div className="grid grid-cols-2 gap-2 md:flex md:items-center md:gap-2">
                         <Input
-                          type="number"
-                          min="1"
+                          type="text"
                           value={listItem.quantity.toString()}
                           onChange={(e) => {
                             const value = e.target.value;
@@ -266,9 +266,12 @@ const ShoppingListTab: React.FC = () => {
                             if (value === '') {
                               return;
                             }
-                            const numericValue = parseInt(value);
-                            if (!isNaN(numericValue) && numericValue >= 1) {
-                              handleUpdateItem(listItem.id, numericValue, listItem.unit_price, listItem.purchased);
+                            // Permite apenas números
+                            if (/^\d+$/.test(value)) {
+                              const numericValue = parseInt(value);
+                              if (!isNaN(numericValue) && numericValue >= 1) {
+                                handleUpdateItem(listItem.id, numericValue, listItem.unit_price, listItem.purchased);
+                              }
                             }
                           }}
                           onBlur={(e) => {
@@ -276,15 +279,6 @@ const ShoppingListTab: React.FC = () => {
                             // Se o campo estiver vazio ou inválido ao perder o foco, define como 1
                             if (value === '' || parseInt(value) < 1 || isNaN(parseInt(value))) {
                               handleUpdateItem(listItem.id, 1, listItem.unit_price, listItem.purchased);
-                            }
-                          }}
-                          onKeyDown={(e) => {
-                            // Permite Delete e Backspace para apagar completamente
-                            if (e.key === 'Delete' || e.key === 'Backspace') {
-                              if (e.currentTarget.value.length === 1) {
-                                e.preventDefault();
-                                e.currentTarget.value = '';
-                              }
                             }
                           }}
                           className="w-full md:w-20 text-sm"
@@ -297,17 +291,36 @@ const ShoppingListTab: React.FC = () => {
                             value={listItem.unit_price ? listItem.unit_price.toString() : ''}
                             onChange={(e) => {
                               const value = e.target.value;
-                              // Permite campo vazio
+                              // Sempre atualiza o valor, mesmo se for string vazia
                               if (value === '') {
                                 handleUpdateItem(listItem.id, listItem.quantity, undefined, listItem.purchased);
                                 return;
                               }
-                              // Permite apenas números e ponto decimal
-                              if (/^\d*\.?\d*$/.test(value)) {
-                                const numericValue = parseFloat(value);
+                              // Permite apenas números, ponto e vírgula
+                              if (/^[\d.,]*$/.test(value)) {
+                                // Converte vírgula para ponto para parseFloat
+                                const normalizedValue = value.replace(',', '.');
+                                // Se termina com ponto, permite (usuário ainda digitando)
+                                if (normalizedValue.endsWith('.')) {
+                                  return; // Não atualiza ainda, deixa o usuário continuar digitando
+                                }
+                                const numericValue = parseFloat(normalizedValue);
                                 if (!isNaN(numericValue) && numericValue >= 0) {
                                   handleUpdateItem(listItem.id, listItem.quantity, numericValue, listItem.purchased);
                                 }
+                              }
+                            }}
+                            onBlur={(e) => {
+                              const value = e.target.value;
+                              if (value === '') {
+                                handleUpdateItem(listItem.id, listItem.quantity, undefined, listItem.purchased);
+                                return;
+                              }
+                              // No blur, garante que valores inválidos sejam limpos
+                              const normalizedValue = value.replace(',', '.');
+                              const numericValue = parseFloat(normalizedValue);
+                              if (isNaN(numericValue) || numericValue < 0) {
+                                handleUpdateItem(listItem.id, listItem.quantity, undefined, listItem.purchased);
                               }
                             }}
                             className="w-full md:w-24 text-sm"
