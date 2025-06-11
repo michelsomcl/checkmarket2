@@ -263,8 +263,8 @@ const ShoppingListTab: React.FC = () => {
                           value={listItem.quantity.toString()}
                           onChange={(e) => {
                             const value = e.target.value;
+                            // Permite campo vazio durante a digitação
                             if (value === '') {
-                              // Permite campo vazio temporariamente
                               return;
                             }
                             const numericValue = parseInt(value);
@@ -274,8 +274,18 @@ const ShoppingListTab: React.FC = () => {
                           }}
                           onBlur={(e) => {
                             const value = e.target.value;
+                            // Se o campo estiver vazio ou inválido ao perder o foco, define como 1
                             if (value === '' || parseInt(value) < 1 || isNaN(parseInt(value))) {
                               handleUpdateItem(listItem.id, 1, listItem.unit_price, listItem.purchased);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            // Permite Delete e Backspace para apagar completamente
+                            if (e.key === 'Delete' || e.key === 'Backspace') {
+                              if (e.currentTarget.value.length === 1) {
+                                e.preventDefault();
+                                e.currentTarget.value = '';
+                              }
                             }
                           }}
                           className="w-full md:w-20 text-sm"
@@ -290,12 +300,23 @@ const ShoppingListTab: React.FC = () => {
                             value={listItem.unit_price ? listItem.unit_price.toString() : ''}
                             onChange={(e) => {
                               const value = e.target.value;
+                              // Permite campo vazio durante a digitação
                               if (value === '') {
                                 handleUpdateItem(listItem.id, listItem.quantity, undefined, listItem.purchased);
-                              } else {
-                                const numericValue = parseFloat(value);
-                                if (!isNaN(numericValue) && numericValue >= 0) {
-                                  handleUpdateItem(listItem.id, listItem.quantity, numericValue, listItem.purchased);
+                                return;
+                              }
+                              const numericValue = parseFloat(value);
+                              if (!isNaN(numericValue) && numericValue >= 0) {
+                                handleUpdateItem(listItem.id, listItem.quantity, numericValue, listItem.purchased);
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              // Permite Delete e Backspace para apagar completamente
+                              if (e.key === 'Delete' || e.key === 'Backspace') {
+                                if (e.currentTarget.value.length === 1) {
+                                  e.preventDefault();
+                                  e.currentTarget.value = '';
+                                  handleUpdateItem(listItem.id, listItem.quantity, undefined, listItem.purchased);
                                 }
                               }
                             }}
