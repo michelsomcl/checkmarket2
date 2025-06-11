@@ -258,21 +258,23 @@ const ShoppingListTab: React.FC = () => {
                     <div className="flex flex-col space-y-2 md:flex-row md:items-center md:space-y-0 md:gap-2">
                       <div className="grid grid-cols-2 gap-2 md:flex md:items-center md:gap-2">
                         <Input
-                          type="text"
+                          type="number"
+                          min="1"
                           value={listItem.quantity.toString()}
                           onChange={(e) => {
                             const value = e.target.value;
-                            // Permite apenas números e string vazia
-                            if (value === '' || /^\d+$/.test(value)) {
-                              const numericValue = value === '' ? 1 : parseInt(value);
-                              if (numericValue >= 1) {
-                                handleUpdateItem(listItem.id, numericValue, listItem.unit_price, listItem.purchased);
-                              }
+                            if (value === '') {
+                              // Permite campo vazio temporariamente
+                              return;
+                            }
+                            const numericValue = parseInt(value);
+                            if (!isNaN(numericValue) && numericValue >= 1) {
+                              handleUpdateItem(listItem.id, numericValue, listItem.unit_price, listItem.purchased);
                             }
                           }}
                           onBlur={(e) => {
                             const value = e.target.value;
-                            if (value === '' || parseInt(value) < 1) {
+                            if (value === '' || parseInt(value) < 1 || isNaN(parseInt(value))) {
                               handleUpdateItem(listItem.id, 1, listItem.unit_price, listItem.purchased);
                             }
                           }}
@@ -281,15 +283,20 @@ const ShoppingListTab: React.FC = () => {
                         <div className="flex items-center gap-1 md:gap-2">
                           <span className="text-xs md:text-sm text-gray-500">x</span>
                           <Input
-                            type="text"
+                            type="number"
+                            step="0.01"
+                            min="0"
                             placeholder="R$ 0,00"
                             value={listItem.unit_price ? listItem.unit_price.toString() : ''}
                             onChange={(e) => {
                               const value = e.target.value;
-                              // Permite apenas números, ponto decimal e string vazia
-                              if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                                const numericValue = value === '' ? undefined : parseFloat(value) || undefined;
-                                handleUpdateItem(listItem.id, listItem.quantity, numericValue, listItem.purchased);
+                              if (value === '') {
+                                handleUpdateItem(listItem.id, listItem.quantity, undefined, listItem.purchased);
+                              } else {
+                                const numericValue = parseFloat(value);
+                                if (!isNaN(numericValue) && numericValue >= 0) {
+                                  handleUpdateItem(listItem.id, listItem.quantity, numericValue, listItem.purchased);
+                                }
                               }
                             }}
                             className="w-full md:w-24 text-sm"
