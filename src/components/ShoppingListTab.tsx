@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Button } from '@/components/ui/button';
@@ -293,30 +292,21 @@ const ShoppingListTab: React.FC = () => {
                         <div className="flex items-center gap-1 md:gap-2">
                           <span className="text-xs md:text-sm text-gray-500">x</span>
                           <Input
-                            type="number"
-                            step="0.01"
-                            min="0"
+                            type="text"
                             placeholder="R$ 0,00"
                             value={listItem.unit_price ? listItem.unit_price.toString() : ''}
                             onChange={(e) => {
                               const value = e.target.value;
-                              // Permite campo vazio durante a digitação
+                              // Permite campo vazio
                               if (value === '') {
                                 handleUpdateItem(listItem.id, listItem.quantity, undefined, listItem.purchased);
                                 return;
                               }
-                              const numericValue = parseFloat(value);
-                              if (!isNaN(numericValue) && numericValue >= 0) {
-                                handleUpdateItem(listItem.id, listItem.quantity, numericValue, listItem.purchased);
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              // Permite Delete e Backspace para apagar completamente
-                              if (e.key === 'Delete' || e.key === 'Backspace') {
-                                if (e.currentTarget.value.length === 1) {
-                                  e.preventDefault();
-                                  e.currentTarget.value = '';
-                                  handleUpdateItem(listItem.id, listItem.quantity, undefined, listItem.purchased);
+                              // Permite apenas números e ponto decimal
+                              if (/^\d*\.?\d*$/.test(value)) {
+                                const numericValue = parseFloat(value);
+                                if (!isNaN(numericValue) && numericValue >= 0) {
+                                  handleUpdateItem(listItem.id, listItem.quantity, numericValue, listItem.purchased);
                                 }
                               }
                             }}
